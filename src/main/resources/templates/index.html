@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dress Showroom Management System</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <meta name="description" content="Comprehensive dress showroom management system">
+    <meta name="author" content="Dress Showroom Management">
+</head>
+<body>
+<div class="container">
+    <!-- Login Form -->
+    <div id="loginForm" class="login-form">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">
+            🏪 SKY BLUE GROUPS - Showroom Management
+        </h2>
+        <form onsubmit="login(event)">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input
+                        type="text"
+                        id="loginUsername"
+                        name="username"
+                        required
+                        placeholder="Enter your username"
+                        autocomplete="username"
+                        autofocus>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input
+                        type="password"
+                        id="loginPassword"
+                        name="password"
+                        required
+                        placeholder="Enter your password"
+                        autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">
+                🔐 Login
+            </button>
+        </form>
+
+        <div id="loginError" class="alert alert-error hidden" style="margin-top: 15px;">
+            Invalid username or password. Please try again.
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #e8f4f8; border-radius: 8px; font-size: 12px;">
+            <strong>🔑 Demo Credentials:</strong><br>
+            <strong>Owner:</strong> admin / admin123<br>
+            <strong>Manager:</strong> manager1 / manager123<br>
+            <strong>Sales Rep:</strong> sales1 / sales123<br>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏪 SKY BLUE GROUPS - Showroom Management</h1>
+            <div class="user-info">
+                <div>
+                    <span><strong>👤 User:</strong> <span id="currentUser"></span></span> |
+                    <span><strong>🎭 Role:</strong> <span id="currentRole"></span></span> |
+                    <span><strong>🏢 Outlet:</strong> <span id="currentOutlet" class="outlet-indicator"></span></span>
+
+                    <!-- Owner outlet selector -->
+                    <span id="ownerOutletSelectorHolder" class="hidden" style="margin-left:10px;">
+                            <label style="font-weight:600; margin-right:6px;">📍 View Outlet</label>
+                            <select id="ownerOutletSelector" style="padding:6px 10px; border-radius:8px; border:1px solid #e0e6ed;">
+                                <option value="">Select Outlet</option>
+                            </select>
+                        </span>
+                </div>
+                <div>
+                    <button class="btn btn-sm" onclick="refreshAllData()" title="Refresh Data" style="margin-right: 10px;">
+                        🔄 Refresh
+                    </button>
+                    <button class="btn btn-danger" onclick="logout()">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" id="tabDashboard" onclick="showTab('dashboard')" title="Alt+1">
+                📊 Dashboard
+            </button>
+            <button class="nav-tab" id="tabSales" onclick="showTab('sales')" title="Alt+2">
+                💰 Sales
+            </button>
+            <button class="nav-tab hidden" id="tabExpenses" onclick="showTab('expenses')" title="Alt+3">
+                💸 Expenses
+            </button>
+            <button class="nav-tab hidden" id="tabUsers" onclick="showTab('users')" title="Alt+4">
+                👥 Users
+            </button>
+            <button class="nav-tab hidden" id="tabSalary" onclick="showTab('salary')" title="Alt+5">
+                💵 Salary
+            </button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboardContent" class="tab-content">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">📊 Dashboard Overview</h2>
+
+            <div class="form-row" style="margin-bottom: 30px;">
+                <div class="form-group">
+                    <label for="dashFromDate">📅 From Date</label>
+                    <input type="date" id="dashFromDate" name="dashFromDate">
+                </div>
+                <div class="form-group">
+                    <label for="dashToDate">📅 To Date</label>
+                    <input type="date" id="dashToDate" name="dashToDate">
+                </div>
+            </div>
+            <button class="btn" onclick="updateDashboard()">
+                🔄 Update Dashboard
+            </button>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSalesDisplay">₹0</div>
+                    <div class="stat-label">💰 Total Sales</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <div class="stat-value" id="totalExpensesDisplay">₹0</div>
+                    <div class="stat-label">💸 Total Expenses</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #27ae60, #229954);">
+                    <div class="stat-value" id="netProfitDisplay">₹0</div>
+                    <div class="stat-label">📈 Sale Balance</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                    <div class="stat-value" id="totalTransactionsDisplay">0</div>
+                    <div class="stat-label">🧾 Total Transactions</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">📋 Recent Sales Activity</h3>
+                <div class="table-container">
+                    <table id="dashboardSalesTable">
+                        <thead>
+                        <tr>
+                            <th>📅 Date</th>
+                            <th>👤 Sales Rep</th>
+                            <th>🧾 Bill No</th>
+                            <th>💰 Amount</th>
+                            <th>💳 Payment</th>
+                            <th>🏢 Outlet</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+                                Loading recent sales data...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Tab -->
+        <div id="salesContent" class="tab-content hidden">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">💰 Sales Management</h2>
+
+            <!-- Sales Entry Form -->
+            <div id="salesEntryForm" class="card hidden">
+                <h3 style="margin-bottom: 20px;">➕ Add Sales Entry</h3>
+                <form onsubmit="addSalesEntry(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newSalesRep">👤 Sales Representative *</label>
+                            <select id="newSalesRep" name="salesRep" required>
+                                <option value="">Select Sales Rep</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newSalesDateTime">📅 Date & Time *</label>
+                            <input type="datetime-local" id="newSalesDateTime" name="salesDateTime" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newBillNumber">🧾 Bill Number *</label>
+                            <input type="text" id="newBillNumber" name="billNumber" required placeholder="e.g., BILL001" pattern="[A-Za-z0-9]+">
+                            <small style="color: #666; font-size: 11px;">Only letters and numbers allowed</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="newSalesAmount">💰 Amount (₹) *</label>
+                            <input type="number" id="newSalesAmount" name="salesAmount" step="0.01" min="0.01" max="1000000" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPaymentType">💳 Payment Type *</label>
+                        <select id="newPaymentType" name="paymentType" required>
+                            <option value="">Select Payment Type</option>
+                            <option value="CASH">💵 Cash</option>
+                            <option value="ACCOUNT">🏦 Account</option>
+                        </select>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-success">
+                            ✅ Add Sales Entry
+                        </button>
+                        <button type="button" class="btn" onclick="clearSalesForm()">
+                            🧹 Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sales Records View -->
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">📋 Sales Records</h3>
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="salesFilterFromDate">📅 From Date</label>
+                        <input type="date" id="salesFilterFromDate" name="salesFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="salesFilterToDate">📅 To Date</label>
+                        <input type="date" id="salesFilterToDate" name="salesToDate">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom: 20px;" id="salesRepFilterRow">
+                    <div class="form-group">
+                        <label for="salesRepFilterSelect">👤 Filter by Sales Rep</label>
+                        <select id="salesRepFilterSelect" name="salesRepFilter">
+                            <option value="">All Sales Representatives</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentTypeFilterSelect">💳 Payment Type Filter</label>
+                        <select id="paymentTypeFilterSelect" name="paymentTypeFilter">
+                            <option value="">All Payment Types</option>
+                            <option value="CASH">💵 Cash</option>
+                            <option value="ACCOUNT">🏦 Account</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" onclick="loadSalesData()">
+                        🔍 Apply Filters
+                    </button>
+                    <button class="btn btn-warning" onclick="exportSalesData()">
+                        📥 Export to CSV
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="salesRecordsTable">
+                        <thead>
+                        <tr>
+                            <th>📅 Date & Time</th>
+                            <th>👤 Sales Rep</th>
+                            <th>🧾 Bill Number</th>
+                            <th>💰 Amount</th>
+                            <th>💳 Payment Type</th>
+                            <th>🏢 Outlet</th>
+                            <th id="createdByHeader" class="hidden">👨‍💼 Created By</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
+                                Loading sales data...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Tab -->
+        <div id="expensesContent" class="tab-content hidden">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">💸 Expense Management</h2>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">➕ Add Expense</h3>
+                <form onsubmit="addExpense(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newExpenseType">📝 Expense Type *</label>
+                            <select id="newExpenseType" name="expenseType" required onchange="handleExpenseTypeChange()">
+                                <option value="">Select Expense Type</option>
+                                <option value="TEA">☕ Tea</option>
+                                <option value="MESS">🍽️ Mess</option>
+                                <option value="DINNER">🍽️ Dinner</option>
+                                <option value="BREAKFAST">🥞 Breakfast</option>
+                                <option value="LUNCH">🍱 Lunch</option>
+                                <option value="CHARITY">❤️ Charity</option>
+                                <option value="CHIT_FUND">💰 Chit Fund</option>
+                                <option value="ADVANCE">💵 Advance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newExpenseAmount">💰 Amount (₹) *</label>
+                            <input type="number" id="newExpenseAmount" name="expenseAmount" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-group hidden" id="advanceToGroup">
+                        <label for="newAdvanceTo">👤 Advance To (Sales Representative) *</label>
+                        <select id="newAdvanceTo" name="advanceTo">
+                            <option value="">Select Sales Rep</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newExpenseDate">📅 Date *</label>
+                        <input type="date" id="newExpenseDate" name="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newExpenseDescription">📝 Description</label>
+                        <textarea id="newExpenseDescription" name="expenseDescription" rows="3" placeholder="Optional description"></textarea>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-success">
+                            ✅ Add Expense
+                        </button>
+                        <button type="button" class="btn" onclick="clearExpenseForm()">
+                            🧹 Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">📋 Expense Records</h3>
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="expenseFilterFromDate">📅 From Date</label>
+                        <input type="date" id="expenseFilterFromDate" name="expenseFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseFilterToDate">📅 To Date</label>
+                        <input type="date" id="expenseFilterToDate" name="expenseToDate">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="expenseTypeFilterSelect">📝 Expense Type Filter</label>
+                        <select id="expenseTypeFilterSelect" name="expenseTypeFilter">
+                            <option value="">All Expense Types</option>
+                            <option value="TEA">☕ Tea</option>
+                            <option value="MESS">🍽️ Mess</option>
+                            <option value="DINNER">🍽️ Dinner</option>
+                            <option value="BREAKFAST">🥞 Breakfast</option>
+                            <option value="LUNCH">🍱 Lunch</option>
+                            <option value="CHARITY">❤️ Charity</option>
+                            <option value="CHIT_FUND">💰 Chit Fund</option>
+                            <option value="ADVANCE">💵 Advance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="advanceToFilterSelect">👤 Advance To Filter</label>
+                        <select id="advanceToFilterSelect" name="advanceToFilter">
+                            <option value="">All Employees</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" onclick="loadExpenseData()">
+                        🔍 Apply Filters
+                    </button>
+                    <button class="btn btn-warning" onclick="exportExpenseData()">
+                        📥 Export to CSV
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="expenseRecordsTable">
+                        <thead>
+                        <tr>
+                            <th>📅 Date</th>
+                            <th>📝 Type</th>
+                            <th>💰 Amount</th>
+                            <th>📝 Description</th>
+                            <th>👤 Advance To</th>
+                            <th>🏢 Outlet</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+                                Loading expense data...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Tab -->
+        <div id="usersContent" class="tab-content hidden">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">👥 User Management</h2>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">➕ Add New User</h3>
+                <form onsubmit="addUser(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserUsername">👤 Username *</label>
+                            <input type="text" id="newUserUsername" name="username" required placeholder="e.g., sales7" pattern="[a-zA-Z0-9_]+">
+                            <small style="color: #666; font-size: 11px;">Letters, numbers, and underscore only</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserFullName">📝 Full Name *</label>
+                            <input type="text" id="newUserFullName" name="fullName" required placeholder="e.g., John Doe">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserRole">🎭 Role *</label>
+                            <select id="newUserRole" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="OWNER">👑 Owner</option>
+                                <option value="MANAGER">👨‍💼 Manager</option>
+                                <option value="SALES">👤 Sales Representative</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserOutlet">🏢 Outlet *</label>
+                            <select id="newUserOutlet" name="outlet" required>
+                                <option value="">Select Outlet</option>
+                                <option value="SKY_BLUE_WOMEN">🏪 SKY_BLUE_WOMEN</option>
+
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-success">
+                            ✅ Add User
+                        </button>
+                        <button type="button" class="btn" onclick="clearUserForm()">
+                            🧹 Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">📋 Existing Users</h3>
+                <div class="table-container">
+                    <table id="userManagementTable">
+                        <thead>
+                        <tr>
+                            <th>👤 Username</th>
+                            <th>📝 Full Name</th>
+                            <th>🎭 Role</th>
+                            <th>🏢 Outlet</th>
+                            <th>⚙️ Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
+                                Loading user data...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary Statement Tab -->
+        <div id="salaryContent" class="tab-content hidden">
+            <h2 style="margin-bottom: 25px; color: #2c3e50;">💵 Salary Statement Generator</h2>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">📊 Generate Salary Statement</h3>
+                <form onsubmit="generateSalaryStatement(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="salaryEmployeeSelect">👤 Sales Representative *</label>
+                            <select id="salaryEmployeeSelect" name="employeeUsername" required>
+                                <option value="">Select Employee</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="salaryIncentivePercentage">💯 Incentive Percentage (%) *</label>
+                            <input type="number" id="salaryIncentivePercentage" name="incentivePercentage" step="0.01" min="0" max="100" required placeholder="e.g., 2.5">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="salaryPeriodFromDate">📅 From Date *</label>
+                            <input type="date" id="salaryPeriodFromDate" name="fromDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="salaryPeriodToDate">📅 To Date *</label>
+                            <input type="date" id="salaryPeriodToDate" name="toDate" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="salaryBaseSalary">💰 Base Salary (₹) *</label>
+                        <input type="number" id="salaryBaseSalary" name="baseSalary" step="0.01" min="0" required placeholder="0.00">
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-success">
+                            📊 Generate Statement
+                        </button>
+                        <button type="button" class="btn" onclick="clearSalaryForm()">
+                            🧹 Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="salaryStatementResult" class="hidden"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 30px; border-radius: 10px; text-align: center;">
+        <div class="loading" style="margin: 0 auto 15px;"></div>
+        <p>Loading...</p>
+    </div>
+</div>
+
+<!-- JavaScript Files -->
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/sales.js"></script>
+<script src="/js/expenses.js"></script>
+<script src="/js/users.js"></script>
+<script src="/js/salary.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

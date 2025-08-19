@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: dress-showroom-management
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false # Set to true in production
+    encoding: UTF-8
+    mode: HTML
+    check-template-location: true
+    enabled: true
+
+
+  # Web Resources
+#  web:
+#    resources:
+#      static-locations: classpath:/static/
+#      cache:
+#        period: 3600 # 1 hour in development, increase for production
+#        cachecontrol:
+#          max-age: 3600
+#          cache-public: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/showroom_db
+    username: ${DB_USERNAME:showroom_user}
+    password: ${DB_PASSWORD:showroom_pass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${SHOW_SQL:true}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+
+logging:
+  level:
+    com.showroom.management: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:WARN}
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:DEBUG}
+    org.hibernate.orm.jdbc.bind: TRACE   # <-- values bound
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web.servlet.view: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+
+app:
+  jwtSecret: ${JWT_SECRET:myVerySecretKeyForShowroomManagement123456789ABCDEFGHIJKLMNOP}
+  jwtExpirationMs: ${JWT_EXPIRATION:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
