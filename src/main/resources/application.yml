@@ -13,17 +13,8 @@ spring:
     enabled: true
 
 
-  # Web Resources
-#  web:
-#    resources:
-#      static-locations: classpath:/static/
-#      cache:
-#        period: 3600 # 1 hour in development, increase for production
-#        cachecontrol:
-#          max-age: 3600
-#          cache-public: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/showroom_db
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/showroom_db}
     username: ${DB_USERNAME:showroom_user}
     password: ${DB_PASSWORD:showroom_pass}
     driver-class-name: org.postgresql.Driver
@@ -31,7 +22,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: ${SHOW_SQL:true}
+    show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -40,7 +31,7 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: never
       continue-on-error: true
 
 server:
@@ -52,11 +43,11 @@ logging:
   level:
     com.showroom.management: ${LOG_LEVEL:INFO}
     org.springframework.security: ${SECURITY_LOG_LEVEL:WARN}
-    org.hibernate.SQL: ${SQL_LOG_LEVEL:DEBUG}
-    org.hibernate.orm.jdbc.bind: TRACE   # <-- values bound
-    org.hibernate.orm.jdbc.extract: TRACE
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.web.servlet.view: DEBUG
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+    org.hibernate.orm.jdbc.bind: WARN   # <-- values bound
+    org.hibernate.orm.jdbc.extract: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.web.servlet.view: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
