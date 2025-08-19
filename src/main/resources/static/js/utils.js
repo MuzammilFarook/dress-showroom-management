@@ -1,7 +1,12 @@
 // utils.js - Utility functions for the application
 
 // Configuration
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = (() => {
+    const isLocal = window.location.hostname === 'localhost' ||
+                   window.location.hostname === '127.0.0.1';
+    return isLocal ? 'http://localhost:8080/api' : '/api';
+})();
+
 const OUTLETS = ['SKY_BLUE_WOMEN'];
 let ownerSelectedOutlet = 'All Outlets';
 
