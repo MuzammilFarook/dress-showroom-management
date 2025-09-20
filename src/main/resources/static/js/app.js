@@ -6,11 +6,24 @@
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
 
-    // Dashboard dates
+    // Dashboard dates - different logic for SALES role
     const dashboardFromDate = document.getElementById('dashFromDate');
     const dashboardToDate = document.getElementById('dashToDate');
-    if (dashboardFromDate) dashboardFromDate.value = today;
+
     if (dashboardToDate) dashboardToDate.value = today;
+
+    if (dashboardFromDate) {
+        // Only set role-specific dates if user is authenticated
+        if (currentUser && currentUser.role === 'SALES') {
+            // For SALES role, set From date to 3 days back (maximum allowed range)
+            const threeDaysBack = new Date();
+            threeDaysBack.setDate(threeDaysBack.getDate() - 3);
+            dashboardFromDate.value = threeDaysBack.toISOString().split('T')[0];
+        } else {
+            // Default to today for all other cases (including when currentUser is null)
+            dashboardFromDate.value = today;
+        }
+    }
 
     // Sales filter dates
     const salesFromDate = document.getElementById('salesFilterFromDate');
