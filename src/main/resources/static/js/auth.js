@@ -11,6 +11,7 @@ async function login(event) {
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     const errorDiv = document.getElementById('loginError');
+    const loginButton = document.querySelector('#loginForm button[type="submit"]');
 
     errorDiv.classList.add('hidden');
 
@@ -20,8 +21,10 @@ async function login(event) {
         return;
     }
 
-    // Show loading overlay during login
-    showLoadingOverlay('Logging in...');
+    // Show spinner on login button and disable it
+    const originalButtonText = loginButton.innerHTML;
+    loginButton.innerHTML = '<span class="btn-spinner"></span>Logging in...';
+    loginButton.disabled = true;
 
     try {
         const response = await fetch(`${API_BASE_URL}/auth/signin`, {
@@ -35,7 +38,10 @@ async function login(event) {
         const result = await response.json();
 
         if (!response.ok) {
-            hideLoadingOverlay(); // Hide loading on error
+            // Restore button state on error
+            loginButton.innerHTML = originalButtonText;
+            loginButton.disabled = false;
+
             errorDiv.textContent = result.message || 'Login failed';
             errorDiv.classList.remove('hidden');
             document.getElementById('loginPassword').value = '';
@@ -47,9 +53,6 @@ async function login(event) {
         currentUser = result.user;
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-        // Update loading message
-        showLoadingOverlay('Setting up your dashboard...');
 
         // Show main application
         document.getElementById('loginForm').classList.add('hidden');
@@ -91,7 +94,10 @@ async function login(event) {
         showAlert(`Welcome back, ${currentUser.fullName}! 🎉`, 'success');
 
     } catch (error) {
-        hideLoadingOverlay(); // Make sure to hide on error
+        // Restore button state on error
+        loginButton.innerHTML = originalButtonText;
+        loginButton.disabled = false;
+
         errorDiv.textContent = 'Login failed. Please try again.';
         errorDiv.classList.remove('hidden');
         console.error('Login error:', error);
@@ -116,6 +122,14 @@ function logout() {
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').classList.add('hidden');
+
+    // Reset login button to original state
+    const loginButton = document.querySelector('#loginForm button[type="submit"]');
+    if (loginButton) {
+        loginButton.innerHTML = '🔐 Login';
+        loginButton.disabled = false;
+    }
+
     document.getElementById('loginUsername').focus();
 }
 
